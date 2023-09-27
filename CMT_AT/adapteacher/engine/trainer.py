@@ -661,9 +661,9 @@ class ATeacherTrainer(DefaultTrainer):
         if self.iter < self.cfg.SEMISUPNET.BURN_UP_STEP:
 
             # input both strong and weak supervised data into model
-            label_data_q.extend(label_data_k)
+#             label_data_q.extend(label_data_k)
             record_dict, _, _, _, _ = self.model(
-                label_data_q, branch="supervised")
+                label_data_k, branch="supervised")
 
             # weight losses
             loss_dict = {}
@@ -745,16 +745,20 @@ class ATeacherTrainer(DefaultTrainer):
             unlabel_data_k = self.add_label(
                 unlabel_data_k, joint_proposal_dict["proposals_pseudo_roih"]
             )
+            
+########################## AFTER BURN-UP STAGE ###################################            
 
-            all_label_data = label_data_q + label_data_k
+#             all_label_data = label_data_q + label_data_k
+# Remove Strong augmentation for all source experiment to check if it affects Contrastive loss
+            all_label_data = label_data_k
+    # Unlabelled / Target data with labels obtained through pseudo labeling
             all_unlabel_data = unlabel_data_q
-
             # 4. input both strongly and weakly augmented labeled data into student model
+            # This is repetation of the burnup stage even after adaptaion started....
             record_all_label_data, _, _, _, _ = self.model(
                 all_label_data, branch="supervised"
             )
             record_dict.update(record_all_label_data)
-
             # 5. input strongly augmented unlabeled data into model
             record_all_unlabel_data, _, _, _, features_student = self.model(
                 all_unlabel_data, branch="supervised_target"
@@ -771,8 +775,11 @@ class ATeacherTrainer(DefaultTrainer):
 
             for i_index in range(len(unlabel_data_k)):
                 # unlabel_data_item = {}
+                # k: filename; v: actual path (datasets/m3fd/ir/trainval/images/01906.png)
+                # get target file_name and the actual image path here and append it to source image list that is weakly augmented
                 for k, v in unlabel_data_k[i_index].items():
                     # label_data_k[i_index][k + "_unlabeled"] = v
+                    # Now label_data_k will have both labeled and unlabeled data i.e, label_data_k[0]['filename'] and label_data_k[0]['filename_unlabeled']
                     label_data_k[i_index][k + "_unlabeled"] = v
                 # unlabel_data_k[i_index] = unlabel_data_item
 
