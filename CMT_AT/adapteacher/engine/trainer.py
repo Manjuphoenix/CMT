@@ -661,9 +661,9 @@ class ATeacherTrainer(DefaultTrainer):
         if self.iter < self.cfg.SEMISUPNET.BURN_UP_STEP:
 
             # input both strong and weak supervised data into model
-#             label_data_q.extend(label_data_k)
+            label_data_q.extend(label_data_k)
             record_dict, _, _, _, _ = self.model(
-                label_data_k, branch="supervised")
+                label_data_q, branch="supervised")
 
             # weight losses
             loss_dict = {}
@@ -748,9 +748,9 @@ class ATeacherTrainer(DefaultTrainer):
             
 ########################## AFTER BURN-UP STAGE ###################################            
 
-#             all_label_data = label_data_q + label_data_k
+            all_label_data = label_data_q + label_data_k
 # Remove Strong augmentation for all source experiment to check if it affects Contrastive loss
-            all_label_data = label_data_k
+#             all_label_data = label_data_k
     # Unlabelled / Target data with labels obtained through pseudo labeling
             all_unlabel_data = unlabel_data_q
             # 4. input both strongly and weakly augmented labeled data into student model
